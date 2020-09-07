@@ -16,16 +16,16 @@ const products = [
 ];
 
 //Comprobar si el carrito esta vacio
-var noProductsInCart = () => {
+var noProductsInCart = productList => {
     var emptyCart = true;
-    for (i = 0; i < products.length && emptyCart; i++) {
-        emptyCart = products[i].units == 0;
+    for (i = 0; i < productList.length && emptyCart; i++) {
+        emptyCart = productList[i].units == 0;
     }
     return emptyCart;
 }
 
 //Calcula los totales del carrito 
-var getCartTotals = (productList) => {
+var getCartTotals = productList => {
     var cartTotals = {
         subTotal: 0, 
         taxes: 0, 
@@ -59,14 +59,14 @@ var createOrderElement = order => {
 }
 
 //Añadir columna descripcion + precio del producto
-var createElementDescription = (product) => {
+var createElementDescription = product => {
     var descriptionTag = document.createElement("span");
     descriptionTag.innerText = product.description + " - " + product.price + "€/ud"; 
     return addContainer(descriptionTag, "product-description");
 }
 
 //Añadir input de cantidad del producto
-var createProductQuantity = (product) => {
+var createProductQuantity = product => {
     var quantityInput = document.createElement("input");
     quantityInput.setAttribute("value", "0");
     quantityInput.setAttribute("type", "number");
@@ -84,7 +84,7 @@ var createProductQuantity = (product) => {
 
         //Desactivar boton calcular si el carrito está vacio
         var btnCalculate = document.getElementById("calculate");
-        btnCalculate.disabled = noProductsInCart();
+        btnCalculate.disabled = noProductsInCart(products);
         
     });
     return addContainer(quantityInput, "product-quantity");
