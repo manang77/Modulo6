@@ -90,7 +90,7 @@ var createProductQuantity = (product) => {
     return addContainer(quantityInput, "product-quantity");
 }
 
-var createProductLine = (product) => {
+var createProductLine = product => {
     //Crear contenedor para cada linea de producto
     var productContainer = document.createElement("div");
     productContainer.setAttribute("class", "product-container");
@@ -103,7 +103,7 @@ var createProductLine = (product) => {
 
 var displayCartProducts = productList => {
     var container = document.getElementById("product-list-container");
-    for (product of products) {
+    for (product of productList) {
         container.appendChild(createProductLine(product));
     }
 }
