@@ -24,30 +24,14 @@ var noProductsInCart = () => {
     return emptyCart;
 }
 
-//Comprueba si la cantidad introducida es mayor que el stock en cuyo caso la cantidad del articulo será el stock
-var getProductQuantity = (quantity, stock) => quantity <= stock ? quantity : stock;  
-
-//Actualizar cantidad de articulo en carrito
-var handleQuantityChange = (event) => {
-    var productIndex = (event.target.id.split("-"))[1]; 
-    var btnCalculate = document.getElementById("calculate");
-
-    //Actualizar cantidad pedida del producto en el array de productos
-    products[productIndex].units = getProductQuantity(event.target.valueAsNumber, products[productIndex].stock);
-    event.target.value = products[productIndex].units;     
-    
-    //Desactivar boton calcular si el carrito está vacio
-    btnCalculate.disabled = noProductsInCart();
-}
-
 //Calcula los totales del carrito 
-var getCartTotals = () => {
+var getCartTotals = (productList) => {
     var cartTotals = {
         subTotal: 0, 
         taxes: 0, 
         total:0}
         
-    for (product of products) {
+    for (product of productList) {
         var subTotalProduct;
         var taxesProduct;
         subTotalProduct = product.price * product.units;
@@ -57,15 +41,6 @@ var getCartTotals = () => {
         cartTotals.total += subTotalProduct + taxesProduct;
     }
     return cartTotals;
-}
-
-//Calculos de totales cuando se pulsa el boton calcular
-var handleCalculateClick = () => {
-    var cartTotals = getCartTotals();
-    for (cartTotal in cartTotals) {
-        var totalField = document.getElementById(cartTotal);
-        totalField.innerText = cartTotals[cartTotal].toFixed(2);
-    }
 }
 
 //Añade contenedor div al elemento recibido como parametro con la clase
@@ -84,42 +59,62 @@ var createOrderElement = order => {
 }
 
 //Añadir columna descripcion + precio del producto
-var createElementDescription = (description, price) => {
+var createElementDescription = (product) => {
     var descriptionTag = document.createElement("span");
-    descriptionTag.innerText = description + " - " + price + "€/ud"; 
+    descriptionTag.innerText = product.description + " - " + product.price + "€/ud"; 
     return addContainer(descriptionTag, "product-description");
 }
 
 //Añadir input de cantidad del producto
-var createProductQuantity = (order, stock) => {
+var createProductQuantity = (product) => {
     var quantityInput = document.createElement("input");
-    quantityInput.setAttribute("id", "productQty-" + order);
     quantityInput.setAttribute("value", "0");
     quantityInput.setAttribute("type", "number");
     quantityInput.setAttribute("min","0");
-    quantityInput.setAttribute("max",stock);
-    quantityInput.addEventListener("change", handleQuantityChange);
+    quantityInput.setAttribute("max",product.stock);
+
+    quantityInput.addEventListener("change", (event) => {
+        //Actualizar cantidad pedida del producto en el array de productos
+        if (event.target.valueAsNumber <= product.stock) {
+            product.units = event.target.valueAsNumber;
+        } else {
+            product.units = product.stock;
+            event.target.value = product.units;
+        }
+
+        //Desactivar boton calcular si el carrito está vacio
+        var btnCalculate = document.getElementById("calculate");
+        btnCalculate.disabled = noProductsInCart();
+        
+    });
     return addContainer(quantityInput, "product-quantity");
 }
 
-var createProductLine = (order, product) => {
+var createProductLine = (product) => {
     //Crear contenedor para cada linea de producto
     var productContainer = document.createElement("div");
     productContainer.setAttribute("class", "product-container");
     //Añadir a la linea del producto las columnas orden, descripcion + precio e input de cantidad 
-    productContainer.appendChild(createOrderElement(order));
-    productContainer.appendChild(createElementDescription(product.description, product.price));
-    productContainer.appendChild(createProductQuantity(order, product.stock));
+    productContainer.appendChild(createOrderElement(products.indexOf(product)));
+    productContainer.appendChild(createElementDescription(product));
+    productContainer.appendChild(createProductQuantity(product));
     return productContainer;
 }
 
 var displayCartProducts = productList => {
     var container = document.getElementById("product-list-container");
     for (product of products) {
-        container.appendChild(createProductLine(products.indexOf(product), product));
+        container.appendChild(createProductLine(product));
     }
 }
 
+document.getElementById("calculate").addEventListener("click", () => {
+    var cartTotals = getCartTotals(products);
+    for (cartTotal in cartTotals) {
+        var totalField = document.getElementById(cartTotal);
+        totalField.innerText = cartTotals[cartTotal].toFixed(2);
+    }
+});
+
 displayCartProducts(products);
-document.getElementById("calculate").addEventListener("click", handleCalculateClick);
 document.getElementById("calculate").disabled = true;
